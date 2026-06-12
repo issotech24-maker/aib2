@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار 2026–2030 | من B2 إلى AI Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1526; --card:#151F38; --card2:#1B2747; --line:#27355C;
+    --ink:#EAF0FB; --muted:#8FA0BF; --accent:#F0B441; --done:#39C5A3;
+    --rail:#27355C; --danger:#E0635C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Tajawal',system-ui,sans-serif;
+    min-height:100vh; padding:0 0 60px;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 18px;}
+
+  header{padding:34px 0 8px;}
+  .eyebrow{color:var(--accent); font-family:'Changa',sans-serif; font-weight:600; font-size:13px; letter-spacing:.08em;}
+  h1{font-family:'Changa',sans-serif; font-weight:800; font-size:clamp(26px,6vw,40px); line-height:1.25; margin:6px 0 4px;}
+  .sub{color:var(--muted); font-size:15px;}
+
+  .progress-card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:22px 0 30px;}
+  .progress-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .progress-label{color:var(--muted); font-size:14px;}
+  .progress-num{font-family:'Changa',sans-serif; font-weight:700; font-size:30px; color:var(--accent);}
+  .bar{height:10px; background:var(--rail); border-radius:99px; overflow:hidden;}
+  .bar-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--done)); border-radius:99px; transition:width .5s ease;}
+  .save-note{font-size:12px; color:var(--muted); margin-top:10px;}
+  .save-note.err{color:var(--danger);}
+  .tip{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .tip b{color:var(--accent); font-weight:700;}
+
+  .road{position:relative; padding-right:30px;}
+  .road::before{content:""; position:absolute; right:10px; top:8px; bottom:8px; width:3px; background:var(--rail); border-radius:3px;}
+  .phase{position:relative; margin-bottom:26px;}
+  .node{position:absolute; right:-27px; top:6px; width:19px; height:19px; border-radius:50%; background:var(--bg); border:3px solid var(--accent); transition:background .3s,border-color .3s;}
+  .phase.complete .node{background:var(--done); border-color:var(--done);}
+  .phase-head{margin-bottom:10px;}
+  .phase-period{color:var(--accent); font-size:13px; font-weight:700;}
+  .phase.complete .phase-period{color:var(--done);}
+  .phase-title{font-family:'Changa',sans-serif; font-weight:700; font-size:20px;}
+  .phase-count{color:var(--muted); font-size:13px;}
+
+  .tasks{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .task{border-bottom:1px solid var(--line);}
+  .task:last-child{border-bottom:none;}
+  .task-row{display:flex; align-items:flex-start; gap:12px; padding:14px 16px; cursor:pointer; user-select:none; transition:background .15s;}
+  .task-row:hover{background:var(--card2);}
+  .task-row:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}
+  .box{
+    flex:none; width:24px; height:24px; margin-top:1px; border-radius:6px;
+    border:2px solid var(--muted); display:grid; place-items:center;
+    transition:all .2s; font-size:14px; color:transparent; cursor:pointer;
+  }
+  .box:hover{border-color:var(--done);}
+  .task.done .box{background:var(--done); border-color:var(--done); color:#0E1526;}
+  .task-text{flex:1;}
+  .task-name{font-size:15.5px; font-weight:500;}
+  .task.done .task-name{color:var(--muted); text-decoration:line-through;}
+  .task-hint{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .chev{flex:none; color:var(--muted); font-size:12px; margin-top:5px; transition:transform .25s;}
+  .task.open .chev{transform:rotate(180deg); color:var(--accent);}
+
+  .details{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    background:rgba(240,180,65,.05); border-right:3px solid var(--accent);
+    margin:0 16px;
+  }
+  .task.open .details{max-height:420px; margin-bottom:14px;}
+  .details-inner{padding:14px 16px; font-size:13.5px; line-height:1.9;}
+  .d-row{display:flex; gap:8px; margin-bottom:7px;}
+  .d-row:last-child{margin-bottom:0;}
+  .d-label{flex:none; color:var(--accent); font-weight:700; min-width:62px;}
+  .d-val{color:var(--ink);}
+  .d-val .ltr{direction:ltr; unicode-bidi:embed;}
+
+  .goal{margin-top:34px; text-align:center; background:var(--card); border:1px dashed var(--accent); border-radius:14px; padding:24px 18px;}
+  .goal .g-icon{font-size:26px;}
+  .goal h2{font-family:'Changa',sans-serif; font-size:22px; margin:6px 0 2px;}
+  .goal p{color:var(--muted); font-size:14px;}
+  .goal.reached{border-style:solid; border-color:var(--done); background:rgba(57,197,163,.08);}
+  .goal.reached h2{color:var(--done);}
+
+  .reset{display:block; margin:26px auto 0; background:none; border:1px solid var(--line); color:var(--muted); font-family:'Tajawal',sans-serif; font-size:13px; padding:8px 18px; border-radius:99px; cursor:pointer;}
+  .reset:hover{border-color:var(--danger); color:var(--danger);}
+
+  .tools-section{margin:30px 0 0;}
+  .section-head{margin-bottom:12px;}
+  .section-kicker{color:var(--accent); font-size:12px; font-weight:700;}
+  .section-title{font-family:'Changa',sans-serif; font-size:22px; line-height:1.35;}
+  .section-sub{color:var(--muted); font-size:13.5px; line-height:1.7;}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-top:12px;}
+  .grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{color:var(--muted); font-size:12px;}
+  input, select, textarea{
+    width:100%; background:#101A31; color:var(--ink); border:1px solid var(--line);
+    border-radius:8px; font-family:'Tajawal',system-ui,sans-serif; font-size:14px; padding:10px 12px;
+  }
+  textarea{min-height:86px; resize:vertical; line-height:1.7;}
+  input:focus, select:focus, textarea:focus{outline:2px solid rgba(240,180,65,.45); border-color:var(--accent);}
+  .actions{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px;}
+  .btn{
+    border:1px solid var(--line); background:var(--card2); color:var(--ink);
+    font-family:'Tajawal',system-ui,sans-serif; font-weight:700; font-size:13px;
+    padding:9px 14px; border-radius:8px; cursor:pointer;
+  }
+  .btn.primary{background:var(--accent); color:#0E1526; border-color:var(--accent);}
+  .btn:hover{filter:brightness(1.06);}
+  .status{color:var(--muted); font-size:12.5px;}
+  .status.err{color:var(--danger);}
+  .quiz-card{background:#101A31; border:1px solid var(--line); border-radius:10px; padding:14px; margin-top:12px;}
+  .quiz-meta{color:var(--accent); font-size:12px; font-weight:700; margin-bottom:6px;}
+  .quiz-question{font-size:15px; line-height:1.8; margin-bottom:10px;}
+  .choices{display:grid; gap:8px;}
+  .choice{
+    text-align:right; border:1px solid var(--line); background:rgba(255,255,255,.02);
+    color:var(--ink); border-radius:8px; padding:10px 12px; cursor:pointer; font-family:'Tajawal',system-ui,sans-serif;
+  }
+  .choice.correct{border-color:var(--done); background:rgba(57,197,163,.12);}
+  .choice.wrong{border-color:var(--danger); background:rgba(224,99,92,.12);}
+  .explain{display:none; color:var(--muted); font-size:13.5px; line-height:1.8; margin-top:10px;}
+  .explain.show{display:block;}
+  .terms-toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;}
+  .terms-list{display:grid; gap:10px;}
+  .term{
+    background:#101A31; border:1px solid var(--line); border-radius:10px; padding:12px;
+    display:grid; gap:5px;
+  }
+  .term-top{display:flex; justify-content:space-between; gap:10px; align-items:flex-start;}
+  .term-de{font-family:'Changa',sans-serif; font-size:17px; color:var(--accent);}
+  .badge{font-size:11px; color:#0E1526; background:var(--done); border-radius:99px; padding:3px 8px; white-space:nowrap;}
+  .term-ar{font-weight:700;}
+  .term-ex{color:var(--muted); font-size:13px; line-height:1.7;}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} .term-top{display:block;} }
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">خارطة طريق · ٢٠٢٦ – ٢٠٣٠</div>
+    <h1>من B2 إلى AI Security</h1>
+    <div class="sub">قاعدة واحدة: خطوة في كل مرة، ولا انتقال لمرحلة قبل إنهاء التي قبلها.</div>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="progress-label">التقدم الكلي</span>
+      <span class="progress-num" id="pct">0%</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="save-note" id="saveNote">يتم حفظ تقدمك تلقائياً.</div>
+    <div class="tip"><b>طريقة الاستخدام:</b> اضغط على اسم المهمة لعرض التفاصيل، وعلى المربع ☐ لتعليمها كمنجزة.</div>
+  </div>
+
+  <div class="road" id="road"></div>
+
+
+  <section class="tools-section" id="cyberTrainer">
+    <div class="section-head">
+      <div class="section-kicker">محاكي تدريب · DeepSeek</div>
+      <h2 class="section-title">أسئلة أمن سيبراني لتقوية مستواك</h2>
+      <p class="section-sub">ضع مفتاح DeepSeek API محلياً في متصفحك، ثم ولّد أسئلة حسب المستوى. عند عدم توفر المفتاح يعمل المحاكي بأسئلة تدريبية محفوظة داخل الصفحة.</p>
+    </div>
+    <div class="panel">
+      <div class="grid">
+        <div class="field">
+          <label for="apiKey">DeepSeek API Key</label>
+          <input id="apiKey" type="password" autocomplete="off" placeholder="sk-...">
+        </div>
+        <div class="field">
+          <label for="quizTopic">المجال</label>
+          <select id="quizTopic">
+            <option>OWASP Top 10</option>
+            <option>Network Security</option>
+            <option>Linux Privilege Escalation</option>
+            <option>AI Security / Prompt Injection</option>
+            <option>German Cybersecurity Vocabulary</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="quizLevel">المستوى</label>
+          <select id="quizLevel">
+            <option>مبتدئ</option>
+            <option selected>متوسط</option>
+            <option>متقدم</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="quizCount">عدد الأسئلة</label>
+          <select id="quizCount">
+            <option>3</option>
+            <option selected>5</option>
+            <option>8</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="saveKeyBtn" type="button">حفظ المفتاح</button>
+        <button class="btn primary" id="generateQuizBtn" type="button">توليد أسئلة</button>
+        <span class="status" id="quizStatus">المفتاح يُحفظ في هذا المتصفح فقط.</span>
+      </div>
+      <div id="quizOutput"></div>
+    </div>
+  </section>
+
+  <section class="tools-section" id="germanTerms">
+    <div class="section-head">
+      <div class="section-kicker">Deutsch · Cybersecurity</div>
+      <h2 class="section-title">مصطلحات ألمانية في الأمن السيبراني</h2>
+      <p class="section-sub">قائمة قابلة للبحث والحفظ. زر التحديث يستخدم DeepSeek لإضافة مصطلحات أحدث مرتبطة بالمجال المختار.</p>
+    </div>
+    <div class="panel">
+      <div class="terms-toolbar">
+        <input id="termSearch" type="search" placeholder="ابحث بالعربية أو الألمانية..." aria-label="بحث المصطلحات">
+        <button class="btn primary" id="refreshTermsBtn" type="button">تحديث المصطلحات</button>
+      </div>
+      <div class="status" id="termsStatus">تتوفر قائمة أساسية، ويمكن تحديثها عند إضافة مفتاح DeepSeek.</div>
+      <div class="terms-list" id="termsList"></div>
+    </div>
+  </section>
+
+  <div class="goal" id="goal">
+    <div class="g-icon">🎯</div>
+    <h2>الهدف النهائي</h2>
+    <p>وظيفة AI Security / AI Pentester في ألمانيا حوالي ٢٠٣٠ — راتب مستهدف €70K+</p>
+  </div>
+
+  <button class="reset" id="resetBtn">إعادة تصفير التقدم</button>
+</div>
+
+<script>
+const PHASES = [
+  {
+    period: "المرحلة ٠ · الآن → أغسطس ٢٠٢٦",
+    title: "الأساس واللغة",
+    tasks: [
+      {id:"b2", name:"اجتياز امتحان B2 Beruflich", hint:"يوم ٢٥ يوليو — الأولوية المطلقة",
+       dur:"حتى ٢٥ يوليو · ٢–٣ ساعات يومياً",
+       src:"نماذج telc الرسمية المجانية · قناة Deutsch mit Marija",
+       tip:"ركّز على نقطتي الضعف الشائعتين: كتابة الإيميلات الرسمية (Beschwerde / Anfrage) والمحادثة المهنية. حل نموذج امتحان كامل كل أسبوع بتوقيت حقيقي."},
+      {id:"vertrag", name:"توقيع عقد الأوسبيلدونغ", hint:"Sparkasse أولوية، Verkäufer احتياط",
+       dur:"بالتوازي مع B2 · متابعة أسبوعية",
+       src:"Lebenslauf + Anschreiben الجاهزان عندك",
+       tip:"قدّم على ٥–١٠ أماكن ولا تنتظر رداً واحداً. بعد التوقيع: تأكد من تسجيل العقد في IHK (شرط لإقامة §16g)."},
+      {id:"pass", name:"جواز السفر أو توثيق جهود استخراجه", hint:"شرط أساسي لإقامة §16g",
+       dur:"ابدأ فوراً · قد يستغرق أشهراً",
+       src:"القنصلية السورية المختصة",
+       tip:"احتفظ بكل مراسلة وموعد وإيصال — إن تعذر استخراج الجواز، هذه الوثائق هي إثبات «الجهود الجدية» الذي تطلبه دائرة الأجانب."},
+      {id:"n8n", name:"صيانة مشاريع n8n الحالية فقط", hint:"بدون تعلم جديد قبل الامتحان",
+       dur:"٥ ساعات أسبوعياً كحد أقصى",
+       src:"مشاريعك: دليل الحسكة · BazCV · بوت العيادة",
+       tip:"المسموح: إصلاح أعطال وعميل خفيف. الممنوع: أي تعلم جديد ينافس الألمانية على تركيزك قبل الامتحان."},
+    ]
+  },
+  {
+    period: "المرحلة ١ · سبتمبر ٢٠٢٦ → صيف ٢٠٢٧",
+    title: "بايثون والوكلاء الأذكياء",
+    tasks: [
+      {id:"py", name:"إتقان Python", hint:"سكربتات، ملفات، التعامل مع APIs",
+       dur:"٣–٤ أشهر · ساعة يومياً",
+       src:"Codezilla بالعربي · freeCodeCamp",
+       tip:"هدف الإتقان واضح: تكتب بنفسك سكربتاً يقرأ ملفاً، يتصل بـ API، ويعالج الأخطاء. عندها تنتقل للخطوة التالية — لا تعلق في الكورسات."},
+      {id:"llm", name:"التعامل المتقدم مع LLM APIs", hint:"System Prompts · JSON · تقليل التكلفة",
+       dur:"٤–٦ أسابيع",
+       src:"وثائق DeepSeek و OpenAI الرسمية",
+       tip:"أنت طبقتها في BazCV — الجديد: JSON Mode للمخرجات المنظمة، Function Calling، ومعالجة أخطاء الـ API. تمرين: أعد كتابة استدعاءات BazCV بشكل أنظف."},
+      {id:"agents", name:"بناء AI Agents بالكود — LangGraph", hint:"الانتقال من n8n إلى البرمجة المباشرة",
+       dur:"شهران",
+       src:"كورس LangChain Academy الرسمي المجاني",
+       tip:"أفضل تمرين: أعد بناء بوت دليل الحسكة بالكود بدل n8n. ستفهم الفرق عملياً وتحصل على مشروع بورتفوليو جاهز."},
+      {id:"github", name:"نشر ٢–٣ مشاريع موثقة على GitHub", hint:"البورتفوليو الأول",
+       dur:"مستمر مع كل مشروع",
+       src:"مشاريعك القائمة + الجديدة",
+       tip:"ملف README بالإنجليزية لكل مشروع: المشكلة، الحل، التقنيات، صور أو فيديو قصير. الشركات تقرأ الـ README قبل الكود."},
+      {id:"free", name:"أول عميل فريلانس لبناء Agents", hint:"دخل جانبي · ٥ ساعات أسبوعياً كحد أقصى",
+       dur:"من الشهر السادس تقريباً",
+       src:"Upwork · مجموعات الأعمال العربية على فيسبوك",
+       tip:"ابدأ بسعر منخفض لأول تقييمين ثم ارفعه. ميزتك المزدوجة: تخدم السوق العربي والألماني معاً. لا تتجاوز ٥ ساعات أسبوعياً — الأوسبيلدونغ أولاً."},
+    ]
+  },
+  {
+    period: "المرحلة ٢ · صيف ٢٠٢٧ → صيف ٢٠٢٨",
+    title: "طبقة الأمن الأساسية",
+    tasks: [
+      {id:"net", name:"أساسيات الشبكات", hint:"TCP/IP · DNS · Firewalls",
+       dur:"٤–٦ أسابيع",
+       src:"TryHackMe — مسار Pre-Security (مجاني)",
+       tip:"لا تتعمق أكثر من اللازم: الهدف فهم كيف تنتقل البيانات وأين تُعترض، لا أن تصبح مهندس شبكات."},
+      {id:"web", name:"أمن الويب — OWASP Top 10", hint:"يشمل أساسيات التشفير: TLS · Hashing · Tokens",
+       dur:"شهران–٣ أشهر",
+       src:"PortSwigger Web Security Academy (مجاني وأفضل مصدر) · TryHackMe",
+       tip:"هنا تتعلم أساسيات التشفير العملية ضمنياً: HTTPS وكلمات المرور والـ JWT. مختبرات PortSwigger تطبيقية بالكامل — طبّق كل ثغرة بيدك."},
+      {id:"ejpt", name:"شهادة eJPT", hint:"أول شهادة اختراق عملية · حوالي €250",
+       dur:"شهران–٣ أشهر تحضير",
+       src:"كورس INE المرفق بالشهادة",
+       tip:"الامتحان عملي بالكامل: ٤٨ ساعة تخترق فيها شبكة حقيقية. نسبة النجاح عالية لمن أنهى الخطوتين السابقتين — لا تدفع قبل جاهزيتك."},
+    ]
+  },
+  {
+    period: "المرحلة ٣ · ٢٠٢٨ → ٢٠٣٠",
+    title: "التخصص: أمن الذكاء الاصطناعي",
+    tasks: [
+      {id:"llmtop", name:"OWASP LLM Top 10", hint:"أشهر ثغرات أنظمة الذكاء الاصطناعي",
+       dur:"٣–٤ أسابيع",
+       src:"الوثيقة الرسمية من موقع OWASP (مجانية)",
+       tip:"اقرأها ثم طبّق: افحص مشاريعك (BazCV، الـ Agents) — أي الثغرات العشر تنطبق عليها؟ وثّق ما تجده، هذه أول مادة لبورتفوليو الأمن."},
+      {id:"inject", name:"إتقان هجمات Prompt Injection", hint:"الهجوم الأهم على نماذج اللغة",
+       dur:"شهر",
+       src:"لعبة Gandalf من Lakera · أبحاث منشورة",
+       tip:"ابدأ بلعبة Gandalf (مجانية وممتعة) ثم جرّب على chatbot تبنيه بنفسك: مباشر، غير مباشر عبر المستندات، وتجاوز التعليمات."},
+      {id:"atlas", name:"إطار MITRE ATLAS", hint:"تصنيف هجمات أنظمة الذكاء الاصطناعي",
+       dur:"أسبوعان–٣ أسابيع",
+       src:"موقع atlas.mitre.org الرسمي",
+       tip:"ادرس الـ Case Studies الحقيقية في الموقع — هي اللغة المشتركة التي تكتب بها تقارير الاختراق الاحترافية لاحقاً."},
+      {id:"tools", name:"أدوات الفحص: garak و pyrit", hint:"أو ما يحل محلها وقتها",
+       dur:"شهر–شهرين",
+       src:"مستودعات GitHub الرسمية للأداتين",
+       tip:"شغّلها على نموذج أو chatbot تملكه أنت فقط. تنبيه: راجع سوق الأدوات في وقتها — هذا المجال يتغير سريعاً وقد تظهر أدوات أقوى."},
+      {id:"redteam", name:"بورتفوليو AI Red Teaming", hint:"تقارير اختبار على أنظمتك الخاصة",
+       dur:"٣–٤ أشهر · بالتوازي مع البحث عن عمل",
+       src:"كل ما سبق مجتمعاً",
+       tip:"المنتج النهائي: ٢–٣ تقارير PDF احترافية بالإنجليزية (نطاق الاختبار، المنهجية حسب ATLAS، النتائج، التوصيات). هذا ما يضعك أمام الشركات بلا خبرة وظيفية رسمية."},
+    ]
+  },
+];
+
+const KEY = "isso-roadmap-2026";
+const API_KEY = "isso-roadmap-deepseek-key";
+const QUIZ_KEY = "isso-roadmap-quiz";
+const TERMS_KEY = "isso-roadmap-terms";
+let state = {};
+
+const fallbackQuestions = [
+  {topic:"OWASP Top 10", level:"متوسط", question:"ما الهدف الأساسي من اختبار SQL Injection؟", choices:["معرفة هل يمكن للمهاجم تعديل استعلام قاعدة البيانات","تسريع تحميل الصفحة","ضغط ملفات JavaScript","تحسين تصميم واجهة الدخول"], answer:0, explain:"SQL Injection يحدث عندما يدخل المستخدم بيانات تغيّر منطق الاستعلام، وقد يؤدي ذلك إلى قراءة أو تعديل بيانات غير مصرح بها."},
+  {topic:"Network Security", level:"مبتدئ", question:"أي بروتوكول يحول اسم النطاق إلى عنوان IP؟", choices:["DNS","SSH","SMTP","NTP"], answer:0, explain:"DNS هو النظام الذي يربط أسماء النطاقات مثل example.com بعناوين IP."},
+  {topic:"AI Security / Prompt Injection", level:"متوسط", question:"ما مثال Prompt Injection غير مباشر؟", choices:["تعليمات خبيثة مخفية داخل مستند يقرأه النموذج","كلمة مرور ضعيفة","منفذ SSH مفتوح","استخدام HTTPS"], answer:0, explain:"الهجوم غير المباشر يحدث عندما ينفذ النموذج تعليمات موجودة داخل مصدر خارجي مثل صفحة ويب أو ملف."},
+  {topic:"Linux Privilege Escalation", level:"متوسط", question:"لماذا تُفحص صلاحيات SUID في لينكس؟", choices:["لأن بعض الملفات قد تعمل بصلاحيات مالكها وتسمح برفع الصلاحيات","لأنها تزيد سرعة النظام","لأنها تمنع تسجيل الدخول","لأنها تحذف السجلات تلقائياً"], answer:0, explain:"ملفات SUID قد تعمل بصلاحيات مستخدم أعلى مثل root، لذلك سوء ضبطها خطر أمني مهم."},
+  {topic:"German Cybersecurity Vocabulary", level:"مبتدئ", question:"ما معنى Schwachstelle في سياق الأمن السيبراني؟", choices:["ثغرة أو نقطة ضعف","نسخة احتياطية","تشفير","جدار حماية"], answer:0, explain:"Schwachstelle تعني vulnerability أو نقطة ضعف يمكن استغلالها."}
+];
+
+const baseTerms = [
+  {de:"die Schwachstelle", ar:"الثغرة / نقطة الضعف", category:"أساسيات", example:"Eine Schwachstelle kann von Angreifern ausgenutzt werden."},
+  {de:"die Bedrohung", ar:"التهديد", category:"أساسيات", example:"Ransomware ist eine ernsthafte Bedrohung für Unternehmen."},
+  {de:"der Angriff", ar:"الهجوم", category:"أساسيات", example:"Der Angriff wurde durch eine Phishing-Mail gestartet."},
+  {de:"die Rechteausweitung", ar:"رفع الصلاحيات", category:"اختبار اختراق", example:"Rechteausweitung ist ein wichtiger Schritt nach dem ersten Zugriff."},
+  {de:"die Zugriffskontrolle", ar:"التحكم بالوصول", category:"ويب", example:"Fehlerhafte Zugriffskontrolle gehört zu den OWASP-Risiken."},
+  {de:"die Verschlüsselung", ar:"التشفير", category:"تشفير", example:"Verschlüsselung schützt Daten während der Übertragung."},
+  {de:"die Mehrfaktor-Authentifizierung", ar:"المصادقة متعددة العوامل", category:"دفاع", example:"Mehrfaktor-Authentifizierung reduziert das Risiko gestohlener Passwörter."},
+  {de:"die Protokolldatei", ar:"ملف السجل", category:"تحليل", example:"In der Protokolldatei sieht man verdächtige Anmeldeversuche."},
+  {de:"die Eingabevalidierung", ar:"التحقق من المدخلات", category:"تطوير آمن", example:"Gute Eingabevalidierung verhindert viele Injection-Angriffe."},
+  {de:"die Sicherheitslücke", ar:"ثغرة أمنية", category:"أساسيات", example:"Die Sicherheitslücke wurde in der neuen Version behoben."}
+];
+let storageOk = true;
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function render(){
+  const openIds = new Set([...document.querySelectorAll(".task.open")].map(e=>e.dataset.id));
+  const road = document.getElementById("road");
+  road.innerHTML = "";
+  PHASES.forEach(ph=>{
+    const doneCount = ph.tasks.filter(t=>state[t.id]).length;
+    const div = document.createElement("div");
+    div.className = "phase" + (doneCount===ph.tasks.length ? " complete":"");
+    div.innerHTML = `
+      <div class="node"></div>
+      <div class="phase-head">
+        <div class="phase-period">${esc(ph.period)}</div>
+        <div class="phase-title">${esc(ph.title)}</div>
+        <div class="phase-count">${doneCount} من ${ph.tasks.length} مكتمل</div>
+      </div>
+      <div class="tasks">
+        ${ph.tasks.map(t=>`
+          <div class="task ${state[t.id]?"done":""} ${openIds.has(t.id)?"open":""}" data-id="${t.id}">
+            <div class="task-row" tabindex="0" role="button" aria-expanded="${openIds.has(t.id)}">
+              <div class="box" data-box="${t.id}" role="checkbox" aria-checked="${!!state[t.id]}" tabindex="0">✓</div>
+              <div class="task-text">
+                <div class="task-name">${esc(t.name)}</div>
+                ${t.hint?`<div class="task-hint">${esc(t.hint)}</div>`:""}
+              </div>
+              <div class="chev">▼</div>
+            </div>
+            <div class="details"><div class="details-inner">
+              <div class="d-row"><span class="d-label">المدة</span><span class="d-val">${esc(t.dur)}</span></div>
+              <div class="d-row"><span class="d-label">المصادر</span><span class="d-val">${esc(t.src)}</span></div>
+              <div class="d-row"><span class="d-label">نصيحة</span><span class="d-val">${esc(t.tip)}</span></div>
+            </div></div>
+          </div>`).join("")}
+      </div>`;
+    road.appendChild(div);
+  });
+
+  const all = PHASES.flatMap(p=>p.tasks);
+  const done = all.filter(t=>state[t.id]).length;
+  const pct = Math.round(done/all.length*100);
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("barFill").style.width = pct + "%";
+  document.getElementById("goal").classList.toggle("reached", pct===100);
+
+  // المربع = إنجاز
+  document.querySelectorAll(".box").forEach(el=>{
+    const toggleDone = (e)=>{
+      e.stopPropagation();
+      const id = el.dataset.box;
+      state[id] = !state[id]; if(!state[id]) delete state[id];
+      save(); render();
+    };
+    el.addEventListener("click", toggleDone);
+    el.addEventListener("keydown", e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault(); toggleDone(e);} });
+  });
+
+  // الصف = عرض التفاصيل
+  document.querySelectorAll(".task-row").forEach(row=>{
+    const toggleOpen = ()=>{
+      row.closest(".task").classList.toggle("open");
+      row.setAttribute("aria-expanded", row.closest(".task").classList.contains("open"));
+    };
+    row.addEventListener("click", toggleOpen);
+    row.addEventListener("keydown", e=>{ if(e.key===" "||e.key==="Enter"){ if(e.target===row){e.preventDefault(); toggleOpen();} } });
+  });
+}
+
+async function storageGet(key){
+  if(window.localStorage) return localStorage.getItem(key);
+  if(window.storage){
+    const r = await window.storage.get(key);
+    return r && r.value;
+  }
+  return null;
+}
+
+async function storageSet(key, value){
+  if(window.localStorage){ localStorage.setItem(key, value); return; }
+  if(window.storage){ await window.storage.set(key, value); return; }
+  throw new Error("No persistent storage");
+}
+
+async function storageDelete(key){
+  if(window.localStorage){ localStorage.removeItem(key); return; }
+  if(window.storage){ await window.storage.delete(key); }
+}
+
+async function save(){
+  if(!storageOk) return;
+  try{ await storageSet(KEY, JSON.stringify(state)); }
+  catch(e){ storageOk=false; note(); }
+}
+
+function note(){
+  const n = document.getElementById("saveNote");
+  if(storageOk){ n.textContent="يتم حفظ تقدمك تلقائياً حتى بعد إغلاق المتصفح."; n.className="save-note"; }
+  else{ n.textContent="تنبيه: الحفظ الدائم غير متاح في هذا المتصفح."; n.className="save-note err"; }
+}
+
+async function load(){
+  try{
+    const saved = await storageGet(KEY);
+    if(saved) state = JSON.parse(saved);
+  }catch(e){ storageOk = false; }
+  note();
+  render();
+}
+
+function setStatus(id, text, isError=false){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = text;
+  el.classList.toggle("err", isError);
+}
+
+function getApiKey(){ return (document.getElementById("apiKey").value || "").trim(); }
+
+async function callDeepSeek(messages){
+  const key = getApiKey();
+  if(!key) throw new Error("أضف مفتاح DeepSeek أولاً.");
+  const res = await fetch("https://api.deepseek.com/chat/completions", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + key },
+    body:JSON.stringify({ model:"deepseek-chat", temperature:0.7, messages })
+  });
+  if(!res.ok) throw new Error("تعذر الاتصال بـ DeepSeek: " + res.status);
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || "";
+}
+
+function extractJson(text){
+  const cleaned = text.replace(/```json|```/g,"").trim();
+  const start = cleaned.indexOf("[");
+  const end = cleaned.lastIndexOf("]");
+  return JSON.parse(cleaned.slice(start, end + 1));
+}
+
+function renderQuiz(questions){
+  const out = document.getElementById("quizOutput");
+  out.innerHTML = questions.map((q, qi)=>`
+    <div class="quiz-card">
+      <div class="quiz-meta">${esc(q.topic || "Cybersecurity")} · ${esc(q.level || "")}</div>
+      <div class="quiz-question">${qi + 1}. ${esc(q.question)}</div>
+      <div class="choices">
+        ${(q.choices || []).map((c, ci)=>`<button class="choice" type="button" data-q="${qi}" data-c="${ci}">${esc(c)}</button>`).join("")}
+      </div>
+      <div class="explain">${esc(q.explain || "")}</div>
+    </div>`).join("");
+  out.querySelectorAll(".choice").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const card = btn.closest(".quiz-card");
+      const q = questions[Number(btn.dataset.q)];
+      card.querySelectorAll(".choice").forEach(choice=>{
+        const selected = Number(choice.dataset.c);
+        choice.classList.toggle("correct", selected === Number(q.answer));
+        choice.classList.toggle("wrong", choice === btn && selected !== Number(q.answer));
+      });
+      card.querySelector(".explain").classList.add("show");
+    });
+  });
+}
+
+async function generateQuiz(){
+  const topic = document.getElementById("quizTopic").value;
+  const level = document.getElementById("quizLevel").value;
+  const count = Number(document.getElementById("quizCount").value);
+  setStatus("quizStatus", "جاري توليد الأسئلة...");
+  try{
+    const text = await callDeepSeek([
+      {role:"system", content:"أنت مدرب أمن سيبراني. أعد JSON فقط بدون Markdown."},
+      {role:"user", content:`ولّد ${count} أسئلة اختيار من متعدد بالعربية عن ${topic} بمستوى ${level}. الصيغة: [{"topic":"","level":"","question":"","choices":["","","",""],"answer":0,"explain":""}]`}
+    ]);
+    const questions = extractJson(text).slice(0, count);
+    await storageSet(QUIZ_KEY, JSON.stringify(questions));
+    renderQuiz(questions);
+    setStatus("quizStatus", "تم توليد الأسئلة وحفظها محلياً.");
+  }catch(e){
+    const questions = fallbackQuestions.filter(q=>q.topic === topic).concat(fallbackQuestions).slice(0, count);
+    renderQuiz(questions);
+    setStatus("quizStatus", e.message + " تم عرض أسئلة تدريبية بديلة.", true);
+  }
+}
+
+function renderTerms(){
+  const query = (document.getElementById("termSearch").value || "").toLowerCase();
+  const terms = (window.cyberTerms || baseTerms).filter(t =>
+    [t.de,t.ar,t.category,t.example].join(" ").toLowerCase().includes(query)
+  );
+  document.getElementById("termsList").innerHTML = terms.map(t=>`
+    <div class="term">
+      <div class="term-top"><div class="term-de">${esc(t.de)}</div><span class="badge">${esc(t.category || "Cyber")}</span></div>
+      <div class="term-ar">${esc(t.ar)}</div>
+      <div class="term-ex">${esc(t.example || "")}</div>
+    </div>`).join("");
+}
+
+async function refreshTerms(){
+  setStatus("termsStatus", "جاري تحديث المصطلحات...");
+  try{
+    const text = await callDeepSeek([
+      {role:"system", content:"أنت خبير أمن سيبراني ومترجم تقني ألماني عربي. أعد JSON فقط بدون Markdown."},
+      {role:"user", content:'أعطني 12 مصطلحاً ألمانياً حديثاً ومهماً في الأمن السيبراني وAI Security. الصيغة: [{"de":"","ar":"","category":"","example":""}]'}
+    ]);
+    window.cyberTerms = extractJson(text);
+    await storageSet(TERMS_KEY, JSON.stringify(window.cyberTerms));
+    renderTerms();
+    setStatus("termsStatus", "تم تحديث المصطلحات وحفظها محلياً.");
+  }catch(e){
+    window.cyberTerms = baseTerms;
+    renderTerms();
+    setStatus("termsStatus", e.message + " تم عرض القائمة الأساسية.", true);
+  }
+}
+
+async function initTrainer(){
+  try{
+    const key = await storageGet(API_KEY);
+    if(key) document.getElementById("apiKey").value = key;
+    const savedQuiz = await storageGet(QUIZ_KEY);
+    if(savedQuiz) renderQuiz(JSON.parse(savedQuiz));
+    const savedTerms = await storageGet(TERMS_KEY);
+    window.cyberTerms = savedTerms ? JSON.parse(savedTerms) : baseTerms;
+  }catch(e){ window.cyberTerms = baseTerms; }
+  renderTerms();
+  document.getElementById("saveKeyBtn").addEventListener("click", async ()=>{
+    try{ await storageSet(API_KEY, getApiKey()); setStatus("quizStatus", "تم حفظ مفتاح DeepSeek محلياً."); }
+    catch(e){ setStatus("quizStatus", "تعذر حفظ المفتاح في هذا المتصفح.", true); }
+  });
+  document.getElementById("generateQuizBtn").addEventListener("click", generateQuiz);
+  document.getElementById("refreshTermsBtn").addEventListener("click", refreshTerms);
+  document.getElementById("termSearch").addEventListener("input", renderTerms);
+}
+
+document.getElementById("resetBtn").addEventListener("click", async ()=>{
+  if(!confirm("هل تريد فعلاً مسح كل التقدم؟")) return;
+  state = {};
+  try{ await storageDelete(KEY); }catch(e){}
+  render();
+});
+
+load();
+initTrainer();
+</script>
+</body>
+</html>
