@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مسار 2026–2030 | من B2 إلى AI Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1526; --card:#151F38; --card2:#1B2747; --line:#27355C;
+    --ink:#EAF0FB; --muted:#8FA0BF; --accent:#F0B441; --done:#39C5A3;
+    --rail:#27355C; --danger:#E0635C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Tajawal',system-ui,sans-serif;
+    min-height:100vh; padding:0 0 60px;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 18px;}
+
+  header{padding:34px 0 8px;}
+  .eyebrow{color:var(--accent); font-family:'Changa',sans-serif; font-weight:600; font-size:13px; letter-spacing:.08em;}
+  h1{font-family:'Changa',sans-serif; font-weight:800; font-size:clamp(26px,6vw,40px); line-height:1.25; margin:6px 0 4px;}
+  .sub{color:var(--muted); font-size:15px;}
+
+  .progress-card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px; margin:22px 0 30px;}
+  .progress-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;}
+  .progress-label{color:var(--muted); font-size:14px;}
+  .progress-num{font-family:'Changa',sans-serif; font-weight:700; font-size:30px; color:var(--accent);}
+  .bar{height:10px; background:var(--rail); border-radius:99px; overflow:hidden;}
+  .bar-fill{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--done)); border-radius:99px; transition:width .5s ease;}
+  .save-note{font-size:12px; color:var(--muted); margin-top:10px;}
+  .save-note.err{color:var(--danger);}
+  .tip{font-size:12.5px; color:var(--muted); margin-top:4px;}
+  .tip b{color:var(--accent); font-weight:700;}
+
+  .road{position:relative; padding-right:30px;}
+  .road::before{content:""; position:absolute; right:10px; top:8px; bottom:8px; width:3px; background:var(--rail); border-radius:3px;}
+  .phase{position:relative; margin-bottom:26px;}
+  .node{position:absolute; right:-27px; top:6px; width:19px; height:19px; border-radius:50%; background:var(--bg); border:3px solid var(--accent); transition:background .3s,border-color .3s;}
+  .phase.complete .node{background:var(--done); border-color:var(--done);}
+  .phase-head{margin-bottom:10px;}
+  .phase-period{color:var(--accent); font-size:13px; font-weight:700;}
+  .phase.complete .phase-period{color:var(--done);}
+  .phase-title{font-family:'Changa',sans-serif; font-weight:700; font-size:20px;}
+  .phase-count{color:var(--muted); font-size:13px;}
+
+  .tasks{background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .task{border-bottom:1px solid var(--line);}
+  .task:last-child{border-bottom:none;}
+  .task-row{display:flex; align-items:flex-start; gap:12px; padding:14px 16px; cursor:pointer; user-select:none; transition:background .15s;}
+  .task-row:hover{background:var(--card2);}
+  .task-row:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}
+  .box{
+    flex:none; width:24px; height:24px; margin-top:1px; border-radius:6px;
+    border:2px solid var(--muted); display:grid; place-items:center;
+    transition:all .2s; font-size:14px; color:transparent; cursor:pointer;
+  }
+  .box:hover{border-color:var(--done);}
+  .task.done .box{background:var(--done); border-color:var(--done); color:#0E1526;}
+  .task-text{flex:1;}
+  .task-name{font-size:15.5px; font-weight:500;}
+  .task.done .task-name{color:var(--muted); text-decoration:line-through;}
+  .task-hint{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .chev{flex:none; color:var(--muted); font-size:12px; margin-top:5px; transition:transform .25s;}
+  .task.open .chev{transform:rotate(180deg); color:var(--accent);}
+
+  .details{
+    max-height:0; overflow:hidden; transition:max-height .35s ease;
+    background:rgba(240,180,65,.05); border-right:3px solid var(--accent);
+    margin:0 16px;
+  }
+  .task.open .details{max-height:420px; margin-bottom:14px;}
+  .details-inner{padding:14px 16px; font-size:13.5px; line-height:1.9;}
+  .d-row{display:flex; gap:8px; margin-bottom:7px;}
+  .d-row:last-child{margin-bottom:0;}
+  .d-label{flex:none; color:var(--accent); font-weight:700; min-width:62px;}
+  .d-val{color:var(--ink);}
+  .d-val .ltr{direction:ltr; unicode-bidi:embed;}
+
+  .goal{margin-top:34px; text-align:center; background:var(--card); border:1px dashed var(--accent); border-radius:14px; padding:24px 18px;}
+  .goal .g-icon{font-size:26px;}
+  .goal h2{font-family:'Changa',sans-serif; font-size:22px; margin:6px 0 2px;}
+  .goal p{color:var(--muted); font-size:14px;}
+  .goal.reached{border-style:solid; border-color:var(--done); background:rgba(57,197,163,.08);}
+  .goal.reached h2{color:var(--done);}
+
+  .reset{display:block; margin:26px auto 0; background:none; border:1px solid var(--line); color:var(--muted); font-family:'Tajawal',sans-serif; font-size:13px; padding:8px 18px; border-radius:99px; cursor:pointer;}
+  .reset:hover{border-color:var(--danger); color:var(--danger);}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">خارطة طريق · ٢٠٢٦ – ٢٠٣٠</div>
+    <h1>من B2 إلى AI Security</h1>
+    <div class="sub">قاعدة واحدة: خطوة في كل مرة، ولا انتقال لمرحلة قبل إنهاء التي قبلها.</div>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-top">
+      <span class="progress-label">التقدم الكلي</span>
+      <span class="progress-num" id="pct">0%</span>
+    </div>
+    <div class="bar"><div class="bar-fill" id="barFill"></div></div>
+    <div class="save-note" id="saveNote">يتم حفظ تقدمك تلقائياً.</div>
+    <div class="tip"><b>طريقة الاستخدام:</b> اضغط على اسم المهمة لعرض التفاصيل، وعلى المربع ☐ لتعليمها كمنجزة.</div>
+  </div>
+
+  <div class="road" id="road"></div>
+
+  <div class="goal" id="goal">
+    <div class="g-icon">🎯</div>
+    <h2>الهدف النهائي</h2>
+    <p>وظيفة AI Security / AI Pentester في ألمانيا حوالي ٢٠٣٠ — راتب مستهدف €70K+</p>
+  </div>
+
+  <button class="reset" id="resetBtn">إعادة تصفير التقدم</button>
+</div>
+
+<script>
+const PHASES = [
+  {
+    period: "المرحلة ٠ · الآن → أغسطس ٢٠٢٦",
+    title: "الأساس واللغة",
+    tasks: [
+      {id:"b2", name:"اجتياز امتحان B2 Beruflich", hint:"يوم ٢٥ يوليو — الأولوية المطلقة",
+       dur:"حتى ٢٥ يوليو · ٢–٣ ساعات يومياً",
+       src:"نماذج telc الرسمية المجانية · قناة Deutsch mit Marija",
+       tip:"ركّز على نقطتي الضعف الشائعتين: كتابة الإيميلات الرسمية (Beschwerde / Anfrage) والمحادثة المهنية. حل نموذج امتحان كامل كل أسبوع بتوقيت حقيقي."},
+      {id:"vertrag", name:"توقيع عقد الأوسبيلدونغ", hint:"Sparkasse أولوية، Verkäufer احتياط",
+       dur:"بالتوازي مع B2 · متابعة أسبوعية",
+       src:"Lebenslauf + Anschreiben الجاهزان عندك",
+       tip:"قدّم على ٥–١٠ أماكن ولا تنتظر رداً واحداً. بعد التوقيع: تأكد من تسجيل العقد في IHK (شرط لإقامة §16g)."},
+      {id:"pass", name:"جواز السفر أو توثيق جهود استخراجه", hint:"شرط أساسي لإقامة §16g",
+       dur:"ابدأ فوراً · قد يستغرق أشهراً",
+       src:"القنصلية السورية المختصة",
+       tip:"احتفظ بكل مراسلة وموعد وإيصال — إن تعذر استخراج الجواز، هذه الوثائق هي إثبات «الجهود الجدية» الذي تطلبه دائرة الأجانب."},
+      {id:"n8n", name:"صيانة مشاريع n8n الحالية فقط", hint:"بدون تعلم جديد قبل الامتحان",
+       dur:"٥ ساعات أسبوعياً كحد أقصى",
+       src:"مشاريعك: دليل الحسكة · BazCV · بوت العيادة",
+       tip:"المسموح: إصلاح أعطال وعميل خفيف. الممنوع: أي تعلم جديد ينافس الألمانية على تركيزك قبل الامتحان."},
+    ]
+  },
+  {
+    period: "المرحلة ١ · سبتمبر ٢٠٢٦ → صيف ٢٠٢٧",
+    title: "بايثون والوكلاء الأذكياء",
+    tasks: [
+      {id:"py", name:"إتقان Python", hint:"سكربتات، ملفات، التعامل مع APIs",
+       dur:"٣–٤ أشهر · ساعة يومياً",
+       src:"Codezilla بالعربي · freeCodeCamp",
+       tip:"هدف الإتقان واضح: تكتب بنفسك سكربتاً يقرأ ملفاً، يتصل بـ API، ويعالج الأخطاء. عندها تنتقل للخطوة التالية — لا تعلق في الكورسات."},
+      {id:"llm", name:"التعامل المتقدم مع LLM APIs", hint:"System Prompts · JSON · تقليل التكلفة",
+       dur:"٤–٦ أسابيع",
+       src:"وثائق DeepSeek و OpenAI الرسمية",
+       tip:"أنت طبقتها في BazCV — الجديد: JSON Mode للمخرجات المنظمة، Function Calling، ومعالجة أخطاء الـ API. تمرين: أعد كتابة استدعاءات BazCV بشكل أنظف."},
+      {id:"agents", name:"بناء AI Agents بالكود — LangGraph", hint:"الانتقال من n8n إلى البرمجة المباشرة",
+       dur:"شهران",
+       src:"كورس LangChain Academy الرسمي المجاني",
+       tip:"أفضل تمرين: أعد بناء بوت دليل الحسكة بالكود بدل n8n. ستفهم الفرق عملياً وتحصل على مشروع بورتفوليو جاهز."},
+      {id:"github", name:"نشر ٢–٣ مشاريع موثقة على GitHub", hint:"البورتفوليو الأول",
+       dur:"مستمر مع كل مشروع",
+       src:"مشاريعك القائمة + الجديدة",
+       tip:"ملف README بالإنجليزية لكل مشروع: المشكلة، الحل، التقنيات، صور أو فيديو قصير. الشركات تقرأ الـ README قبل الكود."},
+      {id:"free", name:"أول عميل فريلانس لبناء Agents", hint:"دخل جانبي · ٥ ساعات أسبوعياً كحد أقصى",
+       dur:"من الشهر السادس تقريباً",
+       src:"Upwork · مجموعات الأعمال العربية على فيسبوك",
+       tip:"ابدأ بسعر منخفض لأول تقييمين ثم ارفعه. ميزتك المزدوجة: تخدم السوق العربي والألماني معاً. لا تتجاوز ٥ ساعات أسبوعياً — الأوسبيلدونغ أولاً."},
+    ]
+  },
+  {
+    period: "المرحلة ٢ · صيف ٢٠٢٧ → صيف ٢٠٢٨",
+    title: "طبقة الأمن الأساسية",
+    tasks: [
+      {id:"net", name:"أساسيات الشبكات", hint:"TCP/IP · DNS · Firewalls",
+       dur:"٤–٦ أسابيع",
+       src:"TryHackMe — مسار Pre-Security (مجاني)",
+       tip:"لا تتعمق أكثر من اللازم: الهدف فهم كيف تنتقل البيانات وأين تُعترض، لا أن تصبح مهندس شبكات."},
+      {id:"web", name:"أمن الويب — OWASP Top 10", hint:"يشمل أساسيات التشفير: TLS · Hashing · Tokens",
+       dur:"شهران–٣ أشهر",
+       src:"PortSwigger Web Security Academy (مجاني وأفضل مصدر) · TryHackMe",
+       tip:"هنا تتعلم أساسيات التشفير العملية ضمنياً: HTTPS وكلمات المرور والـ JWT. مختبرات PortSwigger تطبيقية بالكامل — طبّق كل ثغرة بيدك."},
+      {id:"ejpt", name:"شهادة eJPT", hint:"أول شهادة اختراق عملية · حوالي €250",
+       dur:"شهران–٣ أشهر تحضير",
+       src:"كورس INE المرفق بالشهادة",
+       tip:"الامتحان عملي بالكامل: ٤٨ ساعة تخترق فيها شبكة حقيقية. نسبة النجاح عالية لمن أنهى الخطوتين السابقتين — لا تدفع قبل جاهزيتك."},
+    ]
+  },
+  {
+    period: "المرحلة ٣ · ٢٠٢٨ → ٢٠٣٠",
+    title: "التخصص: أمن الذكاء الاصطناعي",
+    tasks: [
+      {id:"llmtop", name:"OWASP LLM Top 10", hint:"أشهر ثغرات أنظمة الذكاء الاصطناعي",
+       dur:"٣–٤ أسابيع",
+       src:"الوثيقة الرسمية من موقع OWASP (مجانية)",
+       tip:"اقرأها ثم طبّق: افحص مشاريعك (BazCV، الـ Agents) — أي الثغرات العشر تنطبق عليها؟ وثّق ما تجده، هذه أول مادة لبورتفوليو الأمن."},
+      {id:"inject", name:"إتقان هجمات Prompt Injection", hint:"الهجوم الأهم على نماذج اللغة",
+       dur:"شهر",
+       src:"لعبة Gandalf من Lakera · أبحاث منشورة",
+       tip:"ابدأ بلعبة Gandalf (مجانية وممتعة) ثم جرّب على chatbot تبنيه بنفسك: مباشر، غير مباشر عبر المستندات، وتجاوز التعليمات."},
+      {id:"atlas", name:"إطار MITRE ATLAS", hint:"تصنيف هجمات أنظمة الذكاء الاصطناعي",
+       dur:"أسبوعان–٣ أسابيع",
+       src:"موقع atlas.mitre.org الرسمي",
+       tip:"ادرس الـ Case Studies الحقيقية في الموقع — هي اللغة المشتركة التي تكتب بها تقارير الاختراق الاحترافية لاحقاً."},
+      {id:"tools", name:"أدوات الفحص: garak و pyrit", hint:"أو ما يحل محلها وقتها",
+       dur:"شهر–شهرين",
+       src:"مستودعات GitHub الرسمية للأداتين",
+       tip:"شغّلها على نموذج أو chatbot تملكه أنت فقط. تنبيه: راجع سوق الأدوات في وقتها — هذا المجال يتغير سريعاً وقد تظهر أدوات أقوى."},
+      {id:"redteam", name:"بورتفوليو AI Red Teaming", hint:"تقارير اختبار على أنظمتك الخاصة",
+       dur:"٣–٤ أشهر · بالتوازي مع البحث عن عمل",
+       src:"كل ما سبق مجتمعاً",
+       tip:"المنتج النهائي: ٢–٣ تقارير PDF احترافية بالإنجليزية (نطاق الاختبار، المنهجية حسب ATLAS، النتائج، التوصيات). هذا ما يضعك أمام الشركات بلا خبرة وظيفية رسمية."},
+    ]
+  },
+];
+
+const KEY = "isso-roadmap-2026";
+let state = {};
+let storageOk = true;
+
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+
+function render(){
+  const openIds = new Set([...document.querySelectorAll(".task.open")].map(e=>e.dataset.id));
+  const road = document.getElementById("road");
+  road.innerHTML = "";
+  PHASES.forEach(ph=>{
+    const doneCount = ph.tasks.filter(t=>state[t.id]).length;
+    const div = document.createElement("div");
+    div.className = "phase" + (doneCount===ph.tasks.length ? " complete":"");
+    div.innerHTML = `
+      <div class="node"></div>
+      <div class="phase-head">
+        <div class="phase-period">${esc(ph.period)}</div>
+        <div class="phase-title">${esc(ph.title)}</div>
+        <div class="phase-count">${doneCount} من ${ph.tasks.length} مكتمل</div>
+      </div>
+      <div class="tasks">
+        ${ph.tasks.map(t=>`
+          <div class="task ${state[t.id]?"done":""} ${openIds.has(t.id)?"open":""}" data-id="${t.id}">
+            <div class="task-row" tabindex="0" role="button" aria-expanded="${openIds.has(t.id)}">
+              <div class="box" data-box="${t.id}" role="checkbox" aria-checked="${!!state[t.id]}" tabindex="0">✓</div>
+              <div class="task-text">
+                <div class="task-name">${esc(t.name)}</div>
+                ${t.hint?`<div class="task-hint">${esc(t.hint)}</div>`:""}
+              </div>
+              <div class="chev">▼</div>
+            </div>
+            <div class="details"><div class="details-inner">
+              <div class="d-row"><span class="d-label">المدة</span><span class="d-val">${esc(t.dur)}</span></div>
+              <div class="d-row"><span class="d-label">المصادر</span><span class="d-val">${esc(t.src)}</span></div>
+              <div class="d-row"><span class="d-label">نصيحة</span><span class="d-val">${esc(t.tip)}</span></div>
+            </div></div>
+          </div>`).join("")}
+      </div>`;
+    road.appendChild(div);
+  });
+
+  const all = PHASES.flatMap(p=>p.tasks);
+  const done = all.filter(t=>state[t.id]).length;
+  const pct = Math.round(done/all.length*100);
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("barFill").style.width = pct + "%";
+  document.getElementById("goal").classList.toggle("reached", pct===100);
+
+  // المربع = إنجاز
+  document.querySelectorAll(".box").forEach(el=>{
+    const toggleDone = (e)=>{
+      e.stopPropagation();
+      const id = el.dataset.box;
+      state[id] = !state[id]; if(!state[id]) delete state[id];
+      save(); render();
+    };
+    el.addEventListener("click", toggleDone);
+    el.addEventListener("keydown", e=>{ if(e.key===" "||e.key==="Enter"){e.preventDefault(); toggleDone(e);} });
+  });
+
+  // الصف = عرض التفاصيل
+  document.querySelectorAll(".task-row").forEach(row=>{
+    const toggleOpen = ()=>{
+      row.closest(".task").classList.toggle("open");
+      row.setAttribute("aria-expanded", row.closest(".task").classList.contains("open"));
+    };
+    row.addEventListener("click", toggleOpen);
+    row.addEventListener("keydown", e=>{ if(e.key===" "||e.key==="Enter"){ if(e.target===row){e.preventDefault(); toggleOpen();} } });
+  });
+}
+
+async function save(){
+  if(!storageOk || !window.storage) return;
+  try{ await window.storage.set(KEY, JSON.stringify(state)); }
+  catch(e){ storageOk=false; note(); }
+}
+
+function note(){
+  const n = document.getElementById("saveNote");
+  if(storageOk && window.storage){ n.textContent="يتم حفظ تقدمك تلقائياً."; n.className="save-note"; }
+  else{ n.textContent="تنبيه: الحفظ الدائم غير متاح هنا — التقدم سيُفقد عند إغلاق الصفحة."; n.className="save-note err"; }
+}
+
+async function load(){
+  if(window.storage){
+    try{
+      const r = await window.storage.get(KEY);
+      if(r && r.value) state = JSON.parse(r.value);
+    }catch(e){ /* أول استخدام */ }
+  } else { storageOk = false; }
+  note();
+  render();
+}
+
+document.getElementById("resetBtn").addEventListener("click", async ()=>{
+  if(!confirm("هل تريد فعلاً مسح كل التقدم؟")) return;
+  state = {};
+  if(window.storage){ try{ await window.storage.delete(KEY); }catch(e){} }
+  render();
+});
+
+load();
+</script>
+</body>
+</html>
