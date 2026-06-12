@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MVP | من B2 إلى AI Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Changa:wght@600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E1526; --card:#151F38; --card2:#1B2747; --line:#27355C;
+    --ink:#EAF0FB; --muted:#8FA0BF; --accent:#F0B441; --done:#39C5A3; --danger:#E0635C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{background:var(--bg); color:var(--ink); font-family:'Tajawal',system-ui,sans-serif; min-height:100vh; padding-bottom:50px}
+  .wrap{max-width:880px; margin:auto; padding:24px 16px}
+  header{display:grid; gap:6px; margin-bottom:18px}
+  .eyebrow{color:var(--accent); font-family:'Changa',sans-serif; font-size:13px; font-weight:700}
+  h1{font-family:'Changa',sans-serif; font-size:clamp(28px,6vw,44px); line-height:1.2}
+  .sub{color:var(--muted); line-height:1.7; font-size:15px}
+  .panel{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px}
+  .progress-top,.row{display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .pct{font-family:'Changa',sans-serif; color:var(--accent); font-size:30px; font-weight:800}
+  .bar{height:10px; background:var(--line); border-radius:99px; overflow:hidden; margin:8px 0}
+  .fill{height:100%; width:0; background:linear-gradient(90deg,var(--accent),var(--done)); transition:width .25s}
+  .hint{color:var(--muted); font-size:13px; line-height:1.7}
+  .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:14px}
+  .stats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px}
+  .stat{background:#101A31; border:1px solid var(--line); border-radius:10px; padding:10px}
+  .stat span{display:block; color:var(--muted); font-size:12px}
+  .stat strong{font-family:'Changa',sans-serif; color:var(--accent); font-size:21px}
+  h2{font-family:'Changa',sans-serif; font-size:21px; margin-bottom:8px}
+  h3{font-family:'Changa',sans-serif; font-size:18px; margin:18px 0 8px}
+  input,select,textarea,button{font-family:'Tajawal',system-ui,sans-serif}
+  input,select,textarea{width:100%; background:#101A31; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:10px 12px; font-size:14px}
+  textarea{min-height:110px; resize:vertical; line-height:1.7}
+  label{display:grid; gap:6px; color:var(--muted); font-size:12px}
+  .fields{display:grid; gap:10px}
+  .actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center}
+  button{border:1px solid var(--line); background:var(--card2); color:var(--ink); border-radius:8px; padding:9px 13px; cursor:pointer; font-weight:700}
+  button.primary{background:var(--accent); color:#0E1526; border-color:var(--accent)}
+  button.danger:hover{border-color:var(--danger); color:var(--danger)}
+  button:hover{filter:brightness(1.07)}
+  .status{color:var(--muted); font-size:12px}
+  .status.err{color:var(--danger)}
+  .phase{margin-bottom:16px}
+  .phase-title{color:var(--accent); font-family:'Changa',sans-serif; font-size:18px; margin-bottom:8px}
+  .task{background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden}
+  .task-main{display:flex; gap:10px; align-items:flex-start; padding:12px; cursor:pointer}
+  .box{flex:none; width:23px; height:23px; border:2px solid var(--muted); border-radius:6px; display:grid; place-items:center; color:transparent}
+  .task.done .box{background:var(--done); border-color:var(--done); color:#0E1526}
+  .task-name{font-weight:700; line-height:1.5}
+  .task.done .task-name{color:var(--muted); text-decoration:line-through}
+  .task-meta{color:var(--muted); font-size:12px; line-height:1.6; margin-top:2px}
+  .task-detail{display:none; border-top:1px solid var(--line); color:var(--muted); font-size:13px; line-height:1.8; padding:12px; background:#101A31}
+  .task.open .task-detail{display:block}
+  .term,.quiz-card,.session{background:#101A31; border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:8px}
+  .term b{color:var(--accent); font-family:'Changa',sans-serif}
+  .choices{display:grid; gap:8px; margin-top:10px}
+  .choice{text-align:right}
+  .choice.correct{border-color:var(--done); background:rgba(57,197,163,.12)}
+  .choice.wrong{border-color:var(--danger); background:rgba(224,99,92,.12)}
+  .explain{display:none; color:var(--muted); font-size:13px; line-height:1.7; margin-top:8px}
+  .explain.show{display:block}
+  .hidden{display:none}
+  @media (max-width:760px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">MVP · خارطة طريق 2026-2030</div>
+    <h1>من B2 إلى AI Security</h1>
+    <p class="sub">نسخة مركزة لمتابعة التقدم اليومي: اعرف الخطوة التالية، سجّل جلساتك، واحفظ كل شيء في المتصفح.</p>
+  </header>
+
+  <section class="panel">
+    <div class="progress-top">
+      <div>
+        <h2>التقدم العام</h2>
+        <p class="hint" id="saveNote">يتم حفظ تقدمك تلقائياً.</p>
+      </div>
+      <div class="pct" id="pct">0%</div>
+    </div>
+    <div class="bar"><div class="fill" id="barFill"></div></div>
+    <div class="stats">
+      <div class="stat"><span>المهام المتبقية</span><strong id="remainingTasks">0</strong></div>
+      <div class="stat"><span>ساعات الدراسة</span><strong id="totalHours">0h</strong></div>
+      <div class="stat"><span>أيام النشاط</span><strong id="activeDays">0</strong></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>الخطوة التالية</h2>
+      <p class="task-name" id="nextTaskTitle">جاري الحساب...</p>
+      <p class="hint" id="nextTaskHint">أول مهمة غير مكتملة في الخطة.</p>
+      <div class="actions">
+        <button class="primary" id="completeNextBtn" type="button">إنهاء هذه الخطوة</button>
+        <button id="exportBtn" type="button">تصدير نسخة</button>
+        <button id="importBtn" type="button">استيراد نسخة</button>
+        <input class="hidden" id="importFile" type="file" accept="application/json">
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>جلسة اليوم</h2>
+      <div class="fields">
+        <label>هدف الأسبوع <input id="weeklyGoal" placeholder="مثال: ٤ ساعات ألماني + مختبر OWASP"></label>
+        <label>ماذا درست؟ <input id="sessionTopic" placeholder="مثال: SQL Injection basics"></label>
+        <label>الدقائق <input id="sessionMinutes" type="number" min="5" step="5" value="45"></label>
+      </div>
+      <div class="actions">
+        <button class="primary" id="addSessionBtn" type="button">تسجيل الجلسة</button>
+        <span class="status" id="productivityStatus">جاهز.</span>
+      </div>
+      <div id="sessionList"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>ملاحظات شخصية</h2>
+    <textarea id="studyNotes" placeholder="روابط، نقاط ضعف، أفكار مشاريع، ملاحظات مقابلات..."></textarea>
+  </section>
+
+  <section>
+    <h2>الخطة</h2>
+    <div id="road"></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel">
+      <h2>محاكي أسئلة</h2>
+      <p class="hint">يعمل بأسئلة داخلية فوراً. عند إضافة DeepSeek API Key يمكن توليد أسئلة جديدة.</p>
+      <div class="fields">
+        <label>DeepSeek API Key <input id="apiKey" type="password" autocomplete="off" placeholder="sk-..."></label>
+        <label>المجال
+          <select id="quizTopic">
+            <option>OWASP Top 10</option>
+            <option>Network Security</option>
+            <option>AI Security / Prompt Injection</option>
+            <option>German Cybersecurity Vocabulary</option>
+          </select>
+        </label>
+      </div>
+      <div class="actions">
+        <button id="saveKeyBtn" type="button">حفظ المفتاح</button>
+        <button class="primary" id="generateQuizBtn" type="button">توليد سؤال</button>
+        <span class="status" id="quizStatus">المفتاح محفوظ محلياً فقط.</span>
+      </div>
+      <div id="quizOutput"></div>
+    </div>
+
+    <div class="panel">
+      <h2>مصطلحات ألمانية</h2>
+      <input id="termSearch" type="search" placeholder="بحث بالعربية أو الألمانية">
+      <div id="termsList"></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="danger" id="resetBtn" type="button">إعادة تصفير كل البيانات</button>
+  </div>
+</div>
+
+<script>
+const TASK_KEY = "ai-security-mvp-tasks";
+const APP_KEY = "ai-security-mvp-app";
+const API_KEY = "ai-security-mvp-deepseek";
+
+const phases = [
+  {title:"المرحلة 0 · الآن إلى أغسطس 2026", tasks:[
+    {id:"b2", name:"اجتياز امتحان B2 Beruflich", hint:"الأولوية المطلقة قبل التوسع التقني.", detail:"تدريب يومي على الكتابة والمحادثة مع نموذج امتحان كامل أسبوعياً."},
+    {id:"contract", name:"توقيع عقد الأوسبيلدونغ", hint:"Sparkasse أولوية، وVerkäufer احتياط.", detail:"تابع الطلبات أسبوعياً واحفظ كل المراسلات والردود."},
+    {id:"passport", name:"جواز السفر أو إثبات جهود استخراجه", hint:"ضروري لإجراءات الإقامة.", detail:"احتفظ بالمواعيد والإيصالات والمراسلات كدليل رسمي."}
+  ]},
+  {title:"المرحلة 1 · Python و AI Agents", tasks:[
+    {id:"python", name:"إتقان Python العملي", hint:"ملفات، APIs، أخطاء، سكربتات.", detail:"الهدف: كتابة سكربت يتعامل مع API وملفات JSON بدون متابعة خطوة بخطوة."},
+    {id:"llm-api", name:"التعامل المتقدم مع LLM APIs", hint:"Prompts، JSON، معالجة أخطاء.", detail:"أعد بناء جزء من مشاريعك الحالية باستدعاءات منظمة ومخرجات JSON."},
+    {id:"agents", name:"بناء Agent صغير بالكود", hint:"الانتقال من n8n إلى البرمجة.", detail:"ابنِ بوت بسيط يساعد في مهمة واقعية، ثم وثّقه على GitHub."}
+  ]},
+  {title:"المرحلة 2 · أساس الأمن السيبراني", tasks:[
+    {id:"network", name:"أساسيات الشبكات", hint:"TCP/IP، DNS، Firewalls.", detail:"افهم كيف تنتقل البيانات وأين يمكن اعتراضها أو حمايتها."},
+    {id:"owasp", name:"OWASP Top 10", hint:"أمن الويب العملي.", detail:"طبّق المختبرات بيدك، خصوصاً Injection وAccess Control وAuth."},
+    {id:"ejpt", name:"التحضير لشهادة eJPT", hint:"أول شهادة اختراق عملية.", detail:"لا تدفع قبل إكمال أساسيات الشبكات والويب بثقة."}
+  ]},
+  {title:"المرحلة 3 · AI Security", tasks:[
+    {id:"llm-top10", name:"OWASP LLM Top 10", hint:"ثغرات أنظمة الذكاء الاصطناعي.", detail:"اختبر مشاريعك الخاصة مقابل المخاطر العشرة ووثّق النتائج."},
+    {id:"prompt-injection", name:"Prompt Injection", hint:"الهجوم الأهم على LLM apps.", detail:"تدرّب على الهجوم المباشر وغير المباشر عبر مستندات وصفحات."},
+    {id:"portfolio", name:"بورتفوليو AI Red Teaming", hint:"تقارير PDF احترافية.", detail:"اكتب 2-3 تقارير بالإنجليزية: النطاق، المنهجية، النتائج، التوصيات."}
+  ]}
+];
+
+const fallbackQuestions = {
+  "OWASP Top 10": {question:"ما الخطر الأساسي في Broken Access Control؟", choices:["وصول المستخدم لبيانات أو وظائف لا يملك صلاحيتها","بطء الموقع","كبر حجم الصور","تكرار CSS"], answer:0, explain:"Broken Access Control يسمح بتجاوز حدود الصلاحيات، وهو من أخطر مشاكل الويب."},
+  "Network Security": {question:"ما وظيفة DNS؟", choices:["تحويل اسم النطاق إلى IP","تشفير القرص","تشغيل البرامج","ضغط الملفات"], answer:0, explain:"DNS يربط الأسماء المقروءة مثل example.com بعناوين IP."},
+  "AI Security / Prompt Injection": {question:"ما هو Prompt Injection غير المباشر؟", choices:["تعليمات خبيثة داخل مصدر يقرأه النموذج","كسر كلمة مرور SSH","فحص منفذ مفتوح","تشفير اتصال TLS"], answer:0, explain:"يحدث عندما يقرأ النموذج تعليمات خبيثة من ملف أو صفحة أو بريد ويعاملها كأوامر."},
+  "German Cybersecurity Vocabulary": {question:"ما معنى die Schwachstelle؟", choices:["ثغرة أو نقطة ضعف","نسخة احتياطية","جدار حماية","تحديث"], answer:0, explain:"Schwachstelle تعني vulnerability أو نقطة ضعف قابلة للاستغلال."}
+};
+
+const terms = [
+  ["die Schwachstelle","ثغرة / نقطة ضعف","Eine Schwachstelle kann ausgenutzt werden."],
+  ["die Bedrohung","تهديد","Ransomware ist eine ernste Bedrohung."],
+  ["der Angriff","هجوم","Der Angriff begann mit Phishing."],
+  ["die Rechteausweitung","رفع الصلاحيات","Rechteausweitung ist ein Schritt nach dem Zugriff."],
+  ["die Zugriffskontrolle","التحكم بالوصول","Fehlerhafte Zugriffskontrolle ist kritisch."],
+  ["die Verschlüsselung","التشفير","Verschlüsselung schützt Daten."],
+  ["die Mehrfaktor-Authentifizierung","المصادقة متعددة العوامل","MFA schützt Konten besser."],
+  ["die Protokolldatei","ملف السجل","Logs zeigen verdächtige Aktivitäten."]
+];
+
+let taskState = {};
+let appState = {weeklyGoal:"", notes:"", sessions:[]};
+
+function esc(value){return String(value).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function allTasks(){return phases.flatMap(phase => phase.tasks.map(task => ({...task, phase:phase.title})))}
+function saveTasks(){localStorage.setItem(TASK_KEY, JSON.stringify(taskState))}
+function saveApp(){localStorage.setItem(APP_KEY, JSON.stringify(appState))}
+function today(){return new Date().toISOString().slice(0,10)}
+
+function render(){
+  const tasks = allTasks();
+  const done = tasks.filter(task => taskState[task.id]).length;
+  const pct = Math.round(done / tasks.length * 100);
+  const remaining = tasks.filter(task => !taskState[task.id]);
+  const next = remaining[0];
+  const sessions = appState.sessions || [];
+  const totalMinutes = sessions.reduce((sum, session) => sum + Number(session.minutes || 0), 0);
+  const activeDays = new Set(sessions.map(session => session.date)).size;
+
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("barFill").style.width = pct + "%";
+  document.getElementById("remainingTasks").textContent = remaining.length;
+  document.getElementById("totalHours").textContent = (totalMinutes / 60).toFixed(totalMinutes % 60 ? 1 : 0) + "h";
+  document.getElementById("activeDays").textContent = activeDays;
+  document.getElementById("nextTaskTitle").textContent = next ? next.name : "كل المهام مكتملة";
+  document.getElementById("nextTaskHint").textContent = next ? `${next.phase} · ${next.hint}` : "ابدأ بتحديث البورتفوليو والمراجعة.";
+
+  document.getElementById("road").innerHTML = phases.map(phase => `
+    <div class="phase">
+      <div class="phase-title">${esc(phase.title)}</div>
+      ${phase.tasks.map(task => `
+        <div class="task ${taskState[task.id] ? "done" : ""}" data-id="${task.id}">
+          <div class="task-main">
+            <div class="box">✓</div>
+            <div>
+              <div class="task-name">${esc(task.name)}</div>
+              <div class="task-meta">${esc(task.hint)}</div>
+            </div>
+          </div>
+          <div class="task-detail">${esc(task.detail)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".task-main").forEach(row => {
+    row.addEventListener("click", event => {
+      const task = event.currentTarget.closest(".task");
+      taskState[task.dataset.id] = !taskState[task.dataset.id];
+      if(!taskState[task.dataset.id]) delete taskState[task.dataset.id];
+      saveTasks();
+      render();
+    });
+  });
+  document.querySelectorAll(".task").forEach(task => {
+    task.addEventListener("dblclick", () => task.classList.toggle("open"));
+  });
+
+  document.getElementById("sessionList").innerHTML = sessions.slice(-4).reverse().map(session => `
+    <div class="session">${esc(session.topic)} · ${Number(session.minutes)} دقيقة · ${esc(session.date)}</div>
+  `).join("");
+}
+
+function renderTerms(){
+  const query = document.getElementById("termSearch").value.toLowerCase();
+  document.getElementById("termsList").innerHTML = terms
+    .filter(term => term.join(" ").toLowerCase().includes(query))
+    .map(term => `<div class="term"><b>${esc(term[0])}</b><div>${esc(term[1])}</div><small class="hint">${esc(term[2])}</small></div>`)
+    .join("");
+}
+
+function renderQuiz(question){
+  document.getElementById("quizOutput").innerHTML = `
+    <div class="quiz-card">
+      <div class="task-name">${esc(question.question)}</div>
+      <div class="choices">
+        ${question.choices.map((choice, index) => `<button class="choice" data-choice="${index}" type="button">${esc(choice)}</button>`).join("")}
+      </div>
+      <div class="explain">${esc(question.explain)}</div>
+    </div>
+  `;
+  document.querySelectorAll(".choice").forEach(button => {
+    button.addEventListener("click", () => {
+      const selected = Number(button.dataset.choice);
+      document.querySelectorAll(".choice").forEach(choice => {
+        const index = Number(choice.dataset.choice);
+        choice.classList.toggle("correct", index === question.answer);
+        choice.classList.toggle("wrong", choice === button && selected !== question.answer);
+      });
+      document.querySelector(".explain").classList.add("show");
+    });
+  });
+}
+
+async function callDeepSeek(topic){
+  const key = document.getElementById("apiKey").value.trim();
+  if(!key) throw new Error("أضف مفتاح DeepSeek أولاً.");
+  const response = await fetch("https://api.deepseek.com/chat/completions", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer " + key},
+    body:JSON.stringify({
+      model:"deepseek-chat",
+      temperature:0.7,
+      messages:[
+        {role:"system", content:"أنت مدرب أمن سيبراني. أعد JSON فقط بدون Markdown."},
+        {role:"user", content:`أنشئ سؤال اختيار من متعدد بالعربية عن ${topic}. الصيغة: {"question":"","choices":["","","",""],"answer":0,"explain":""}`}
+      ]
+    })
+  });
+  if(!response.ok) throw new Error("تعذر الاتصال بـ DeepSeek.");
+  const text = (await response.json()).choices?.[0]?.message?.content || "";
+  return JSON.parse(text.replace(/```json|```/g,"").trim());
+}
+
+function exportBackup(){
+  const blob = new Blob([JSON.stringify({taskState, appState, exportedAt:new Date().toISOString()}, null, 2)], {type:"application/json"});
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "ai-security-roadmap-mvp.json";
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function importBackup(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      taskState = data.taskState || {};
+      appState = {...appState, ...(data.appState || {})};
+      saveTasks(); saveApp(); loadForm(); render();
+    }catch(error){ alert("ملف النسخة غير صالح."); }
+  };
+  reader.readAsText(file);
+}
+
+function loadForm(){
+  document.getElementById("weeklyGoal").value = appState.weeklyGoal || "";
+  document.getElementById("studyNotes").value = appState.notes || "";
+  document.getElementById("apiKey").value = localStorage.getItem(API_KEY) || "";
+}
+
+function init(){
+  try{ taskState = JSON.parse(localStorage.getItem(TASK_KEY) || "{}") }catch(error){}
+  try{ appState = {...appState, ...JSON.parse(localStorage.getItem(APP_KEY) || "{}")} }catch(error){}
+  loadForm();
+  render();
+  renderTerms();
+  renderQuiz(fallbackQuestions["OWASP Top 10"]);
+  document.getElementById("saveNote").textContent = "يتم حفظ كل شيء تلقائياً حتى بعد إغلاق المتصفح.";
+
+  document.getElementById("weeklyGoal").addEventListener("input", event => {appState.weeklyGoal = event.target.value; saveApp()});
+  document.getElementById("studyNotes").addEventListener("input", event => {appState.notes = event.target.value; saveApp()});
+  document.getElementById("addSessionBtn").addEventListener("click", () => {
+    const topic = document.getElementById("sessionTopic").value.trim() || "جلسة دراسة";
+    const minutes = Math.max(5, Number(document.getElementById("sessionMinutes").value || 45));
+    appState.sessions = appState.sessions || [];
+    appState.sessions.push({topic, minutes, date:today()});
+    document.getElementById("sessionTopic").value = "";
+    saveApp(); render();
+    document.getElementById("productivityStatus").textContent = "تم تسجيل الجلسة.";
+  });
+  document.getElementById("completeNextBtn").addEventListener("click", () => {
+    const next = allTasks().find(task => !taskState[task.id]);
+    if(next){ taskState[next.id] = true; saveTasks(); render(); }
+  });
+  document.getElementById("saveKeyBtn").addEventListener("click", () => {
+    localStorage.setItem(API_KEY, document.getElementById("apiKey").value.trim());
+    document.getElementById("quizStatus").textContent = "تم حفظ المفتاح محلياً.";
+  });
+  document.getElementById("generateQuizBtn").addEventListener("click", async () => {
+    const topic = document.getElementById("quizTopic").value;
+    document.getElementById("quizStatus").textContent = "جاري تجهيز السؤال...";
+    try{
+      renderQuiz(await callDeepSeek(topic));
+      document.getElementById("quizStatus").textContent = "تم توليد السؤال.";
+    }catch(error){
+      renderQuiz(fallbackQuestions[topic]);
+      document.getElementById("quizStatus").textContent = error.message + " تم عرض سؤال داخلي.";
+    }
+  });
+  document.getElementById("termSearch").addEventListener("input", renderTerms);
+  document.getElementById("exportBtn").addEventListener("click", exportBackup);
+  document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+  document.getElementById("importFile").addEventListener("change", event => {
+    const file = event.target.files && event.target.files[0];
+    if(file) importBackup(file);
+    event.target.value = "";
+  });
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if(!confirm("هل تريد مسح كل بيانات MVP؟")) return;
+    localStorage.removeItem(TASK_KEY);
+    localStorage.removeItem(APP_KEY);
+    taskState = {}; appState = {weeklyGoal:"", notes:"", sessions:[]};
+    loadForm(); render();
+  });
+}
+
+init();
+</script>
+</body>
+</html>
